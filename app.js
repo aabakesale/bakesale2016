@@ -19,16 +19,19 @@ app.use(express.static(__dirname + '/public'));
 
 // routes
 app.get('/', function(req, res) {
-  res.render('index');
+  bakeApi.displayOffer(req, res, '1TuqlBzU9oGAaExc3lXtZK2wiI9mcdSeN_1DMyYFALIs');
 });
 
-app.post('/submit', function(req, res) {
+app.post('/:sheetId/submit', function(req, res) {
   console.log(req.body);
   order = req.body.order;
-  bakeApi.placeOrder(order, res);
+  bakeApi.placeOrder(order, res, req.params.sheetId);
 });
 
-
+app.get('/:sheetId', function(req, res) {
+  console.log(req.params.sheetId);
+  bakeApi.displayOffer(req, res, req.params.sheetId);
+});
 
 
 // start server

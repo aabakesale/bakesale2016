@@ -8,29 +8,28 @@ html
 
   body
     h1 義賣活動
-    form.form(action='/submit', method='post')
+    form.form(action="/#{sheetId}/submit", method='post')
 
       h3 訂單
-      table.table 
-        thead
-          tr
-            th 品項
-            th 單價(Unit Price)
-            th 幾份(Unit)
-            th 備註
-        tbody
-          tr
-            td 蘿蔔絲餅
-            td $6/4個
-            td
-              input(name='order[蘿蔔絲餅]')
-            td 每份四個
-          tr
-            td 豆沙包
-            td $8/盒
-            td
-              input(name='order[豆沙包]')
-            td
+      if !info
+        p ERROR!
+      else
+        table.table
+          thead
+            tr
+              each key in keys
+                th= key
+              th 訂購數量
+              th 小計
+          tbody
+            each obj, index in info
+              tr
+                each key in keys
+                  td= obj[key]
+                td
+                  input(name="order[#{obj.Item}]")
+                td
+                
 
       h3 個人資料
       .name
