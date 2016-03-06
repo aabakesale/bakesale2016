@@ -4,6 +4,7 @@ html
     title= meta.title
     meta(charset="UTF-8")
     link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous")
+    link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css")
     link(rel='stylesheet', href='./style.css')
     script(src='https://code.jquery.com/jquery-2.2.1.min.js')
 
@@ -11,7 +12,7 @@ html
     .container
 
       h1= meta.title
-      form.form(action="/#{sheetId}/submit", method='post')
+      form.form#saleform(action="/#{sheetId}/submit", method='post', onsubmit="return checkForm();")
 
         h3 訂單
         if !info
@@ -22,36 +23,80 @@ html
               tr
                 each key in keys
                   th= key
-                th 訂購數量
-                th 小計
+                th 訂購數量(Quantity)
+                th 小計(Subtotal)
             tbody
               each obj, index in info
-                tr
+                tr(data-unit-price="#{unitPrices[index]}")
                   each key in keys
                     td= obj[key]
                   td
                     input.filling(name="order[#{obj.Item}]")
                   td
+                    .subtotal
+              tr
+                each key in keys
+                  th
+                th 總計(Total)
+                td
+                  #totalAmount $0
                   
 
         h3 個人資料
         .name
-          label Name 姓名
-          div 
-          input(name='order[name]')
+          label.must Name 姓名
+          input.form-control(name='order[name]', placeholder='Your Name')
         .email
-          label Email 信箱
-          div
-          input(name='order[email]')      
-        button.btn.btn-primary.submit#submit 提交表單
+          label.must Email 信箱
+          input.form-control(name='order[email]', placeholder='your-email@example.com') 
+        .contact
+          label.must Contact Number 電話
+          input.form-control(name='order[contact]', placeholder='(734) 123-4567')
+        h3 相關訊息
+        each message in messages
+          .row
+            .col-lg-2.col-md-3.col-sm-4.msgh
+              p= message[0]
+            .col-lg-10.col-md-9.col-sm-8.msgp
+              p= message[1]
+        
+        button.btn.btn-primary.submit#submit Submit
+
+    footer
+      .footer-left
+        p 本訂單介面並無支付功能，亦不會記錄個人資料。個人資料僅限本次訂購使用。
+      .footer-right
+        p
+          a(href="https://github.com/aabakesale/bakesale2016")
+            i.fa.fa-github.icon-large
+          |  Created by Shang-En Huang, Chun-Wen Chen, Kevin Wang, William Chu, 2016
 
     script.
       $(document).ready(function(){
       $(".filling").change(function(){
-      var tr = $(this).parents("tr");
-      console.log(tr);
+      var tr = $(this).parents("tr")[0];
+      //console.log(tr);
       var val = $(this).val();
-      if (!isNaN(val) && parseInt(val) > 0) $(tr).addClass('buy');
-      else $(tr).removeClass('buy');
+      if (!isNaN(val) && parseInt(val) > 0) {
+      $(tr).addClass('buy');
+      var unitPrice = $(tr).data('unit-price');
+      var subtotal = parseInt(val) * unitPrice;
+      var p = $(tr).children("td").children(".subtotal").html(val + " x $" + unitPrice + " = <font color=red>$" + subtotal + "</font>");
+      //console.log(p);
+      } else $(tr).removeClass('buy');
+      updateTotal();
       });
       });
+      function checkForm() {
+      return confirm("確定送出訂單？");
+      }
+      function updateTotal() {
+      var s=0;
+      $(".filling").each(function(i, e){
+      var tr=$(e).parents("tr")[0];
+      var val=$(this).val();
+      var unitPrice = $(tr).data('unit-price');
+      if(!isNaN(val) && parseInt(val) > 0) s += unitPrice * parseInt(val);
+      });
+      $('#totalAmount').html("$"+s);
+      }

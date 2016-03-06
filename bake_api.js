@@ -76,6 +76,7 @@ function displayOffer(req, res, sheetId) {
           var actualMaxColumn = 0; //last column should be omitted
           var rowsIdx = {};
           var showState = {};
+          var unitPricesName, unitPricesRow;
           for (var i = 0; i < data.length; i += 1) {
             if (data[i].col == 1)
               rowsIdx[data[i].row] = data[i].value;
@@ -83,9 +84,16 @@ function displayOffer(req, res, sheetId) {
               showState[data[i].row] = data[i].value;
             if (data[i].col > actualMaxColumn)
               actualMaxColumn = data[i].col;
+            if (data[i].col == parseInt(metadataColumns) && data[i].value == '*')
+              unitPricesRow = data[i].row;
           }
           showState[1] = 'show'; //hack (overwrite by "date")
           rowsIdx[1] = 'Item'; //hack (overwrite by "seq")
+          unitPricesName = rowsIdx[unitPricesRow];
+          console.log(unitPricesRow, unitPricesName);
+          console.log(metadataColumns);
+          var unitPrices = {};
+          
           console.log(rowsIdx);
           console.log(showState);
 
@@ -97,12 +105,35 @@ function displayOffer(req, res, sheetId) {
                 info[data[i].col] = {};
               info[data[i].col][rowsIdx[data[i].row]] = data[i].value;
             }
+            if (data[i].row == unitPricesRow)
+              unitPrices[data[i].col] = data[i].value;
           }
-          
+
+
+          //handling messages
+          var messages = {};
+          var startRow = 0, endRow = -1, startColumn = 0;
+          for (var i = 0; i < data.length; i += 1) {
+            if (data[i].value == "display-messages-begin") {
+              startRow = data[i].row + 1;
+              startColumn = data[i].col;
+            }
+            if (data[i].value == "display-messages-end") {
+              endRow = data[i].row - 1;
+            }
+          }
+          for (var i = 0; i < data.length; i += 1) {
+            if (data[i].row >= startRow && data[i].row <= endRow) {
+              if (data[i].col == startColumn || data[i].col == startColumn + 1) {
+                if (messages[data[i].row] === undefined) messages[data[i].row] = [];
+                messages[data[i].row][data[i].col - startColumn] = data[i].value;
+              }
+            }
+          }
+
           var keys = Object.keys(info[Object.keys(info)[0]]);
           var meta = { title: sheetInfo.title };
-          console.log(keys);
-          res.render('index', {info: info, keys: keys, sheetId: sheetId, meta: meta});
+          res.render('index', {info: info, keys: keys, sheetId: sheetId, meta: meta, unitPrices: unitPrices, messages: messages});
         });
       });
 

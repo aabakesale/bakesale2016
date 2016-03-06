@@ -60,6 +60,61 @@ label{
   position: absolute;
   top: -10px;
 }
+.subtotal {
+  display: none;
+}
+.buy .subtotal {
+  display: block;
+}
+
 input.filling {
   text-align: center;
+}
+#totalAmount {
+  color: brown;
+  font-size: 150%;
+}
+footer {
+  min-height: 40px;
+  background-color: #333;
+  color: #999;
+  width: 100%;
+  margin-top: 20px;
+  padding: 10px 0;
+  font-size: 80%;
+  display: flex;
+  flex-direction: row;
+}
+.footer-left {
+  padding-left: 20px;
+  flex: 1 0 auto;
+}
+.footer-right {
+  flex: 1 0 auto;
+  text-align: right;
+  padding-right: 10px;
+}
+.footer-right a {
+  color: #999;
+}
+.footer-right p {
+  margin: 0;
+}
+.icon-large {
+  font-size: 150%;
+}
+.must::after {
+  content: "*";
+  color: red;
+}
+/* Message head */
+.msgh {
+  font-weight: bold;
+  font-size: 150%;
+  vertical-align: center;
+  line-height: 30px;
+}
+.msgp {
+  font-size: 120%;
+  line-height: 30px;
 }
