@@ -23,15 +23,22 @@ html
               tr
                 each key in keys
                   th= key
-                th 訂購數量(Quantity)
+                th.quantity 訂購數量(Quantity)
                 th 小計(Subtotal)
             tbody
               each obj, index in info
                 tr(data-unit-price="#{unitPrices[index]}")
                   each key in keys
                     td= obj[key]
-                  td
-                    input.filling(name="order[#{obj.Item}]")
+                  td.quantity
+                    .input-group
+                      span.input-group-btn
+                        span.btn.btn-danger.decrement
+                          i.fa.fa-minus-square
+                      input.form-control.filling(name="order[#{obj.Item}]")
+                      span.input-group-btn
+                        span.btn.btn-primary.increment
+                          i.fa.fa-plus-square
                   td
                     .subtotal
               tr
@@ -45,20 +52,21 @@ html
         h3 個人資料
         .name
           label.must Name 姓名
-          input.form-control(name='order[name]', placeholder='Your Name')
+          input.form-control#nameField(name='order[name]', placeholder='Your Name')
         .email
           label.must Email 信箱
-          input.form-control(name='order[email]', placeholder='your-email@example.com') 
+          input.form-control#emailField(name='order[email]', placeholder='your-email@example.com') 
         .contact
           label.must Contact Number 電話
-          input.form-control(name='order[contact]', placeholder='(734) 123-4567')
-        h3 相關訊息
-        each message in messages
-          .row
-            .col-lg-2.col-md-3.col-sm-4.msgh
-              p= message[0]
-            .col-lg-10.col-md-9.col-sm-8.msgp
-              p= message[1]
+          input.form-control#contactField(name='order[contact]', placeholder='(734) 123-4567')
+        if messages.length > 0
+          h3 相關訊息
+          each message in messages
+            .row
+              .col-lg-2.col-md-3.col-sm-4.msgh
+                p= message[0]
+              .col-lg-10.col-md-9.col-sm-8.msgp
+                p= message[1]
         
         button.btn.btn-primary.submit#submit Submit
 
@@ -77,7 +85,9 @@ html
       var tr = $(this).parents("tr")[0];
       //console.log(tr);
       var val = $(this).val();
-      if (!isNaN(val) && parseInt(val) > 0) {
+      val = parseInt(Number(val));
+      if (val > 0) {
+      $(this).val(val);
       $(tr).addClass('buy');
       var unitPrice = $(tr).data('unit-price');
       var subtotal = parseInt(val) * unitPrice;
@@ -86,8 +96,43 @@ html
       } else $(tr).removeClass('buy');
       updateTotal();
       });
+      $(".decrement").mousedown(function(){
+        var par = $(this).parents(".input-group")[0];
+        var input = $(par).children("input")[0];
+        var val = Number($(input).val());
+        val = parseInt(Number(val)) - 1;
+        if (val <= 0) $(input).val('');
+        else $(input).val(val);
+        $(input).change();
+        $(this).blur();
+      });
+      $(".increment").mousedown(function(){
+        var par = $(this).parents(".input-group")[0];
+        var input = $(par).children("input")[0];
+        var val = $(input).val();
+        val = parseInt(Number(val)) + 1;
+        if (val <= 0) $(input).val('');
+        else $(input).val(val);
+        $(input).change();
+        $(this).blur();
+      });
       });
       function checkForm() {
+      var name = $("#nameField").val();
+      var email = $("#emailField").val();
+      var contact = $("#contactField").val();
+      if (name === "") {
+        alert("Please enter your name before submission!");
+        return false;
+      }
+      if (email === "") {
+        alert("Please enter your email before submission!");
+        return false;
+      }
+      if (contact === "") {
+        alert("Please enter your contact information before submission!");
+        return false;
+      }
       return confirm("確定送出訂單？");
       }
       function updateTotal() {

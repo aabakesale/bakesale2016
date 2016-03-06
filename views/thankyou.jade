@@ -1,9 +1,20 @@
 doctype html
-head
-  title 義賣活動
-  link(rel='stylesheet', href='/style.css')
+html
+  head
+    title 義賣活動
+    meta(charset="UTF-8")
+    link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous")
+    link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css")
+    link(rel='stylesheet', href='/style.css')
 
-body
-  h1 謝謝您的訂購！
-  p
-    a(href="/#{sheetId}") 請點選我回到首頁。
+  body
+    .container
+      h1(style="font-weight:bold") 謝謝您的訂購！
+      p(style="font-size:120%")
+        | 系統將儘速為您處理訂單，並且寄送電子郵件至您的信箱。
+        br
+        | 若有其他問題，請洽詢表單提供者：#{contact}，謝謝！
+      p(style="font-size:120%")
+        a(href="/#{sheetId}")
+          i.fa.fa-home
+          |  請點選我回到首頁。

@@ -4,7 +4,6 @@ var key = require('./aabs.json');
 
 var GoogleSpreadsheet = require("google-spreadsheet");
 
-
 function placeOrder(order, res, sheetId) {
   var my_sheet = new GoogleSpreadsheet(sheetId);
 
@@ -34,7 +33,10 @@ function placeOrder(order, res, sheetId) {
           res.send(400);
           return;
         }
-        res.render('thankyou', {sheetId: sheetId});
+        sheet1.getCells({"min-row":2, "max-row":2, "min-col":5, "max-col":5}, function(err, data) {
+          contact = data[0].value;
+          res.render('thankyou', {sheetId: sheetId, contact: contact});
+        });
       });
     });
   });
@@ -90,12 +92,12 @@ function displayOffer(req, res, sheetId) {
           showState[1] = 'show'; //hack (overwrite by "date")
           rowsIdx[1] = 'Item'; //hack (overwrite by "seq")
           unitPricesName = rowsIdx[unitPricesRow];
-          console.log(unitPricesRow, unitPricesName);
-          console.log(metadataColumns);
+          //console.log(unitPricesRow, unitPricesName);
+          //console.log(metadataColumns);
           var unitPrices = {};
           
-          console.log(rowsIdx);
-          console.log(showState);
+          //console.log(rowsIdx);
+          //console.log(showState);
 
           var info = {};
           for (var i = 0; i < data.length; i += 1) {
@@ -130,6 +132,8 @@ function displayOffer(req, res, sheetId) {
               }
             }
           }
+          messages = Object.keys(messages).map(function(v) { return messages[v]; });
+
 
           var keys = Object.keys(info[Object.keys(info)[0]]);
           var meta = { title: sheetInfo.title };
