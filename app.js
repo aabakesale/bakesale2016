@@ -13,6 +13,9 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 // template engine: jade
 app.set('view engine', 'jade');
 
+// static files
+app.use(express.static(__dirname + '/public'));
+
 
 // routes
 app.get('/', function(req, res) {

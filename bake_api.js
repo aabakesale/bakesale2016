@@ -12,6 +12,7 @@ function placeOrder(order, res) {
 
   order.seq = '1';
   order.emailed = '0';
+  order.date = new Date().toString();
   my_sheet.useServiceAccountAuth(key, function(err) {
     console.log(err);
 
