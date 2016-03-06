@@ -1,44 +1,46 @@
 doctype html
 html
   head
-    title 義賣活動
+    title= meta.title
     meta(charset="UTF-8")
     link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous")
     link(rel='stylesheet', href='./style.css')
 
   body
-    h1 義賣活動
-    form.form(action="/#{sheetId}/submit", method='post')
+    .container
 
-      h3 訂單
-      if !info
-        p ERROR!
-      else
-        table.table
-          thead
-            tr
-              each key in keys
-                th= key
-              th 訂購數量
-              th 小計
-          tbody
-            each obj, index in info
+      h1= meta.title
+      form.form(action="/#{sheetId}/submit", method='post')
+
+        h3 訂單
+        if !info
+          p ERROR!
+        else
+          table
+            thead
               tr
                 each key in keys
-                  td= obj[key]
-                td
-                  input(name="order[#{obj.Item}]")
-                td
-                
+                  th= key
+                th 訂購數量
+                th 小計
+            tbody
+              each obj, index in info
+                tr
+                  each key in keys
+                    td= obj[key]
+                  td
+                    input(name="order[#{obj.Item}]")
+                  td
+                  
 
-      h3 個人資料
-      .name
-        label Name 姓名
-        div 
-        input(name='order[name]')
-      .email
-        label Email 信箱
-        div
-        input(name='order[email]')      
-      button.submit#submit 提交
+        h3 個人資料
+        .name
+          label Name 姓名
+          div 
+          input(name='order[name]')
+        .email
+          label Email 信箱
+          div
+          input(name='order[email]')      
+        button.btn.primary.submit#submit 提交表單
 

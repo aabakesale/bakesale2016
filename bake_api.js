@@ -92,7 +92,7 @@ function displayOffer(req, res, sheetId) {
           var info = {};
           for (var i = 0; i < data.length; i += 1) {
             var cell = data[i];
-            if (data[i].col > metadataColumns && data[i].col < actualMaxColumn && showState[data[i].row] === 'show') {
+            if (data[i].col > metadataColumns && data[i].col < actualMaxColumn && showState[data[i].row] !== 'hide') {
               if (info[data[i].col] === undefined)
                 info[data[i].col] = {};
               info[data[i].col][rowsIdx[data[i].row]] = data[i].value;
@@ -100,8 +100,9 @@ function displayOffer(req, res, sheetId) {
           }
           
           var keys = Object.keys(info[Object.keys(info)[0]]);
+          var meta = { title: sheetInfo.title };
           console.log(keys);
-          res.render('index', {info: info, keys: keys, sheetId: sheetId});
+          res.render('index', {info: info, keys: keys, sheetId: sheetId, meta: meta});
         });
       });
 
