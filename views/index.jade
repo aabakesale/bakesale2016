@@ -5,6 +5,7 @@ html
     meta(charset="UTF-8")
     link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous")
     link(rel='stylesheet', href='./style.css')
+    script(src='https://code.jquery.com/jquery-2.2.1.min.js')
 
   body
     .container
@@ -29,7 +30,7 @@ html
                   each key in keys
                     td= obj[key]
                   td
-                    input(name="order[#{obj.Item}]")
+                    input.filling(name="order[#{obj.Item}]")
                   td
                   
 
@@ -42,5 +43,15 @@ html
           label Email 信箱
           div
           input(name='order[email]')      
-        button.btn.primary.submit#submit 提交表單
+        button.btn.btn-primary.submit#submit 提交表單
 
+    script.
+      $(document).ready(function(){
+      $(".filling").change(function(){
+      var tr = $(this).parents("tr");
+      console.log(tr);
+      var val = $(this).val();
+      if (!isNaN(val) && parseInt(val) > 0) $(tr).addClass('buy');
+      else $(tr).removeClass('buy');
+      });
+      });
