@@ -1,0 +1,35 @@
+doctype html
+html
+  head
+    title= meta.title
+    meta(charset="UTF-8")
+    link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous")
+    link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css")
+    link(rel="stylesheet" href="/style-receipts.css")
+
+  body
+    .container
+      each row in data
+        table
+          tbody
+            tr
+              td(colspan=4)
+                | Name:
+                b  #{row['name']}
+            tr.rule-at-bottom.subtitle
+              td(colspan=2)
+                | Email:
+                b  #{row['email']}
+              td(colspan=2)
+                | Contact:
+                b  #{row['contact']}
+            each col in info
+              if parseInt(Number(row[col.Item])) > 0
+                tr
+                  td(colspan=1)= col.Item
+                  td(colspan=3,style="font-weight: bold")= row[col.Item]
+            tr.rule-at-top.subtitle
+              td(colspan=4)
+                | Total:
+                b  $#{row['amt']}
+

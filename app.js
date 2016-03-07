@@ -34,6 +34,31 @@ app.get('/:sheetId', function(req, res) {
 });
 
 
+// routes for receipts
+app.get('/:sheetId/receipts', function(req, res) {
+  var v = req.query.passcode;
+  var sheetId = req.params.sheetId;
+  var askPasscode = function(req, res, sheetId, oldPasscode, meta) {
+    res.render('passcode', {meta: meta, sheetId: sheetId, action:'receipts'});
+  }
+  var verifyPasscode = (function(v, req, res, sheetId, oldPasscode, meta) {
+    if (v === oldPasscode) {
+      console.log("Correct!");
+      bakeApi.generateReceipts(req, res, sheetId);
+    } else {
+      console.log("Incorrect!");
+      res.render('passcode', {meta: meta, sheetId: sheetId, action:'receipts', wrongMessage: true});
+    }
+  }).bind(null, v);
+
+  if (v === undefined)
+    bakeApi.generatePasscode(req, res, req.params.sheetId, askPasscode);
+  else
+    bakeApi.generatePasscode(req, res, req.params.sheetId, verifyPasscode);
+});
+
+
+
 // start server
 app.listen(7000, function () {
     console.log('Example app listening on port 7000!');

@@ -43,7 +43,7 @@ function placeOrder(order, res, sheetId) {
 }
 
 
-function displayOffer(req, res, sheetId) {
+function getColumnInfoAnsSheet(req, res, sheetId, callback) {
   var sheet = new GoogleSpreadsheet(sheetId);
   sheet.useServiceAccountAuth(key, function(err) {
     if (err) {
@@ -137,15 +137,81 @@ function displayOffer(req, res, sheetId) {
 
           var keys = Object.keys(info[Object.keys(info)[0]]);
           var meta = { title: sheetInfo.title };
-          res.render('index', {info: info, keys: keys, sheetId: sheetId, meta: meta, unitPrices: unitPrices, messages: messages});
+
+          
+          callback(req, res, sheetId, { info: info, keys: keys, meta: meta, unitPrices: unitPrices, messages: messages, metadataRows: metadataRows, metadataColumns: metadataColumns }, sheet1);
+
         });
       });
-
     });
   });
 }
 
+
+function displayOffer(req, res, sheetId) {
+  var callback = function(req, res, sheetId, meta, sheet) {
+    res.render('index', {info: meta.info, keys: meta.keys, sheetId: sheetId, meta: meta.meta, unitPrices: meta.unitPrices, messages: meta.messages});
+  };
+  getColumnInfoAnsSheet(req, res, sheetId, callback);
+}
+
+
+/* callback should have the form (req, res, sheetId, oldPassword, meta) */
+function generatePasscode(req, res, sheetId, callback) {
+  var sheet = new GoogleSpreadsheet(sheetId);
+  sheet.useServiceAccountAuth(key, function(err) {
+    if (err) {
+      console.log(err);
+      res.set('Content-Type', 'plain/text');
+      res.send(422);
+      return;
+    }
+    sheet.getInfo( function(err, sheetInfo) {
+      if (err) {
+        console.log(err);
+        res.set('Content-Type', 'plain/text');
+        res.send(422);
+        return;
+      }
+      var sheet1 = sheetInfo.worksheets[0];
+      // passcode should be store at E3
+      sheet1.getCells({"min-row":3, "max-row":3, "min-col":5, "max-col":5}, function(err, data) {
+        var v = data[0].value.substr(10);
+        var w = ("0000" + parseInt(Math.random() * 10000)).slice(-4);
+        console.log(v);
+        if (v === "") v = parseInt(Math.random() * 10000);
+        data[0].value = "passcode: " + w;
+        data[0].save(function(err) {
+          if (err) {
+            console.log(err);
+            res.send(422);
+            return;
+          }
+          callback(req, res, sheetId, v, {title: sheetInfo.title});
+        });
+      });
+    });
+  });
+}
+
+function generateReceipts(req, res, sheetId) {
+  var callback = function(req, res, sheetId, meta, sheet) {
+    var metadataRows = parseInt(Number(meta.metadataRows));
+    sheet.getRows({offset: metadataRows + 1}, function(err, data) {
+      if (err) {
+        console.log(err);
+        res.send(422);
+        return;
+      }
+      res.render('receipts', {meta: meta.meta, info: meta.info, data: data});
+    });
+  };
+  getColumnInfoAnsSheet(req, res, sheetId, callback);
+}
+
 module.exports = {
   placeOrder: placeOrder,
-  displayOffer: displayOffer
+  displayOffer: displayOffer,
+  generatePasscode: generatePasscode,
+  generateReceipts: generateReceipts
 };

@@ -1,0 +1,35 @@
+doctype html
+html
+  head
+    title= meta.title
+    meta(charset="UTF-8")
+    link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous")
+    link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css")
+    link(rel='stylesheet', href='/style.css')
+
+  body
+    .container
+      h1(style="font-weight:bold") [#{meta.title}] 表單明細：請輸入密碼
+      if wrongMessage != undefined
+        .alert.alert-danger
+          p(style="font-size:120%") 輸入的密碼錯誤，請重新取得正確的密碼！
+
+      p(style="font-size:120%")
+        | 系統已產生一組密碼至您的表單（請查看 
+        span(style="color:red;font-size:120%") E3 
+        | 欄位），請點選以下連結取得 passcode: 後之四位數密碼。
+        br
+        br
+        a(href="https://docs.google.com/spreadsheets/d/#{sheetId}/edit#gid=0")
+          | https://docs.google.com/spreadsheets/d/#{sheetId}/edit#gid=0
+      .row
+        .col-lg-4
+        .col-lg-4
+          form.form(action="/#{sheetId}/#{action}", method="get")
+            input.form-control(name='passcode')
+            button.btn.btn-primary(type='submit') Get Printable Orders
+        .col-lg-4
+      p(style="font-size:120%")
+        a(href="/#{sheetId}")
+          i.fa.fa-home
+          |  請點選我回到首頁。

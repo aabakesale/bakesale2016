@@ -1,0 +1,33 @@
+
+
+table {
+  border: 3px solid black;
+  margin-bottom: 30px;
+  width: 100%;
+}
+tr.rule-at-bottom {
+  border-bottom: 2px solid black;
+}
+tr.rule-at-top {
+  border-top: 2px solid black;
+}
+td {
+  font-size: 150%;
+}
+.subtitle {
+  font-size: 100%;
+}
+
+
+@media print {
+  table {
+    min-width: 400px;
+    page-break-after: always;
+  }
+  td {
+    font-size: 18pt;
+  }
+  .subtitle td {
+    font-size: 14pt;
+  }
+}
