@@ -139,8 +139,40 @@ function getColumnInfoAnsSheet(req, res, sheetId, callback) {
           var meta = { title: sheetInfo.title };
 
           
-          callback(req, res, sheetId, { info: info, keys: keys, meta: meta, unitPrices: unitPrices, messages: messages, metadataRows: metadataRows, metadataColumns: metadataColumns }, sheet1);
-
+          var sheet2 = sheetInfo.worksheets[1];
+          sheet2.getRows(2, function(err, data) {
+            var titles = Object.keys(data[0]);
+            var headers = [];
+            var options = [];
+            var start = 0;
+            for(var i in titles) {
+              if (titles[i] === 'columnnames')
+                start = 1;
+              if (titles[i] === 'beginofoptions')
+                start = 2;
+              if (titles[i] === 'endofoptions')
+                start = 0;
+              if (start == 1) 
+                headers.push(titles[i]);
+              if (start == 2 && titles[i].substring(0, 6) === "option")
+                options.push(titles[i]);
+            }
+            var formSpec = [];
+            for(var i in data) {
+              var row = data[i];
+              var purifiedRow = {};
+              var opt = {};
+              for(var j in headers) {
+                purifiedRow[headers[j]] = row[headers[j]];
+              }
+              for(var j in options) {
+                opt[row[options[j]]] = row['display' + options[j]];
+              }
+              purifiedRow.options = opt;
+              formSpec.push(purifiedRow);
+            }
+            callback(req, res, sheetId, { info: info, keys: keys, meta: meta, unitPrices: unitPrices, messages: messages, metadataRows: metadataRows, metadataColumns: metadataColumns, formSpec: formSpec }, sheet1);
+          });
         });
       });
     });
@@ -150,7 +182,7 @@ function getColumnInfoAnsSheet(req, res, sheetId, callback) {
 
 function displayOffer(req, res, sheetId) {
   var callback = function(req, res, sheetId, meta, sheet) {
-    res.render('index', {info: meta.info, keys: meta.keys, sheetId: sheetId, meta: meta.meta, unitPrices: meta.unitPrices, messages: meta.messages});
+    res.render('index', {info: meta.info, keys: meta.keys, sheetId: sheetId, meta: meta.meta, unitPrices: meta.unitPrices, messages: meta.messages, formSpec: meta.formSpec});
   };
   getColumnInfoAnsSheet(req, res, sheetId, callback);
 }

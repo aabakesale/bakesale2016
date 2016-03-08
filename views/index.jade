@@ -9,6 +9,8 @@ html
     script(src='https://code.jquery.com/jquery-2.2.1.min.js')
 
   body
+    script.
+      var checkCallbacks = [];
     .container
 
       h1= meta.title
@@ -48,17 +50,6 @@ html
                 td
                   #totalAmount $0
                   
-
-        h3 個人資料
-        .name
-          label.must Name 姓名
-          input.form-control#nameField(name='order[name]', placeholder='Your Name')
-        .email
-          label.must Email 信箱
-          input.form-control#emailField(name='order[email]', placeholder='your-email@example.com') 
-        .contact
-          label.must Contact Number 電話
-          input.form-control#contactField(name='order[contact]', placeholder='(734) 123-4567')
         if messages.length > 0
           h3 相關訊息
           each message in messages
@@ -67,6 +58,44 @@ html
                 p= message[0]
               .col-lg-10.col-md-9.col-sm-8.msgp
                 p= message[1]
+
+        h3 個人資料
+        each row in formSpec
+          div.specialForms(id="#{row['columnnames']}", style="padding-top:10px")
+            if row['mustanswer'] == 'TRUE'
+              label.must= row['displaylabel']
+            else
+              label= row['displaylabel']
+            if row['type'] == 'input'
+              input.form-control(name="order[#{row['columnnames']}]", placeholder="#{row['placeholder']}")
+              script.
+                $(document).ready(function() {
+                  checkCallbacks.push(function() {
+                    var val = $("input[name='order[#{row['columnnames']}]']").val();
+                    if (val === "") {
+                      alert("Please enter your #{row['columnnames']}!");
+                      return false;
+                    }
+                    return true;
+                  });
+                });
+            if row['type'] == 'radio'
+              each value, key in row.options
+                div
+                  input(id="#{key}", type='radio', name="order[#{row['columnnames']}]", value="#{key}")
+                  | 
+                  label(for="#{key}")= value
+              script.
+                $(document).ready(function() {
+                  checkCallbacks.push(function() {
+                    var val = $("input[name='order[#{row['columnnames']}]']:checked").val();
+                    if (val === "" || val === undefined) {
+                      alert("Please select #{row['columnnames']}!");
+                      return false;
+                    }
+                    return true;
+                  });
+                });
         
         button.btn.btn-primary.submit#submit Submit
 
@@ -118,20 +147,9 @@ html
       });
       });
       function checkForm() {
-      var name = $("#nameField").val();
-      var email = $("#emailField").val();
-      var contact = $("#contactField").val();
-      if (name === "") {
-        alert("Please enter your name before submission!");
-        return false;
-      }
-      if (email === "") {
-        alert("Please enter your email before submission!");
-        return false;
-      }
-      if (contact === "") {
-        alert("Please enter your contact information before submission!");
-        return false;
+      for(var i in checkCallbacks) {
+        if(checkCallbacks[i]() == false)
+          return false;
       }
       return confirm("確定送出訂單？");
       }

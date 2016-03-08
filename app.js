@@ -25,6 +25,13 @@ app.get('/', function(req, res) {
 app.post('/:sheetId/submit', function(req, res) {
   console.log(req.body);
   order = req.body.order;
+  for (key in order) {
+    if (key === 'name') break;
+    if (Number(order[key]) !== parseInt(Number(order[key]))) {
+      res.send(422);
+      return;
+    }
+  }
   bakeApi.placeOrder(order, res, req.params.sheetId);
 });
 
