@@ -37,6 +37,10 @@ app.post('/:sheetId/submit', function(req, res) {
 
 app.get('/:sheetId', function(req, res) {
   console.log(req.params.sheetId);
+  if (req.params.sheetId === 'favicon.ico') {
+    res.send(404);
+    return;
+  }
   bakeApi.displayOffer(req, res, req.params.sheetId);
 });
 

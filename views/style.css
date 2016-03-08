@@ -138,3 +138,12 @@ footer {
   top: 0;
   left: 0;
 }
+.full-order {
+  color: rgb(255, 80, 80);
+  font-weight: bold;
+  min-height: 34px;
+}
+.full-order p {
+  margin: 0;
+  line-height: 34px;
+}

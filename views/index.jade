@@ -33,14 +33,18 @@ html
                   each key in keys
                     td= obj[key]
                   td.quantity
-                    .input-group
-                      span.input-group-btn
-                        span.btn.btn-danger.decrement
-                          i.fa.fa-minus-square
-                      input.form-control.filling(name="order[#{obj.Item}]")
-                      span.input-group-btn
-                        span.btn.btn-primary.increment
-                          i.fa.fa-plus-square
+                    if obj['limit'] !== undefined && parseInt(Number(obj['limit'])) <= 0
+                      .full-order
+                        p 訂單暫時額滿!
+                    else
+                      .input-group
+                        span.input-group-btn
+                          span.btn.btn-danger.decrement
+                            i.fa.fa-minus-square
+                        input.form-control.filling(name="order[#{obj.Item}]")
+                        span.input-group-btn
+                          span.btn.btn-primary.increment
+                            i.fa.fa-plus-square
                   td
                     .subtotal
               tr

@@ -10,6 +10,11 @@ function placeOrder(order, res, sheetId) {
   order.seq = '1';
   order.emailed = '0';
   order.date = new Date().toString();
+
+  var callback = function(req, res, sheetId, meta, sheet) {
+    
+  };
+
   my_sheet.useServiceAccountAuth(key, function(err) {
     if (err) {
       console.log(err);
@@ -92,6 +97,13 @@ function getColumnInfoAnsSheet(req, res, sheetId, callback) {
           showState[1] = 'show'; //hack (overwrite by "date")
           rowsIdx[1] = 'Item'; //hack (overwrite by "seq")
           unitPricesName = rowsIdx[unitPricesRow];
+          
+          // display keys
+          var keys = [];
+          for (var i = 1; i <= metadataRows; i++) {
+            if (showState[i] === 'show')
+              keys.push(rowsIdx[i]);
+          } 
           //console.log(unitPricesRow, unitPricesName);
           //console.log(metadataColumns);
           var unitPrices = {};
@@ -102,7 +114,7 @@ function getColumnInfoAnsSheet(req, res, sheetId, callback) {
           var info = {};
           for (var i = 0; i < data.length; i += 1) {
             var cell = data[i];
-            if (data[i].col > metadataColumns && data[i].col < actualMaxColumn && showState[data[i].row] !== 'hide') {
+            if (data[i].col > metadataColumns && data[i].col < actualMaxColumn) {
               if (info[data[i].col] === undefined)
                 info[data[i].col] = {};
               info[data[i].col][rowsIdx[data[i].row]] = data[i].value;
@@ -134,13 +146,17 @@ function getColumnInfoAnsSheet(req, res, sheetId, callback) {
           }
           messages = Object.keys(messages).map(function(v) { return messages[v]; });
 
-
-          var keys = Object.keys(info[Object.keys(info)[0]]);
+          //var keys = Object.keys(info[Object.keys(info)[0]]);
           var meta = { title: sheetInfo.title };
 
           
           var sheet2 = sheetInfo.worksheets[1];
           sheet2.getRows(2, function(err, data) {
+            if (err) {
+              console.log(err);
+              res.send(500);
+              return;
+            }
             var titles = Object.keys(data[0]);
             var headers = [];
             var options = [];
