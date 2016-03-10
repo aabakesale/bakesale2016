@@ -4,49 +4,6 @@ var key = require('./aabs.json');
 
 var GoogleSpreadsheet = require("google-spreadsheet");
 
-function placeOrder(order, res, sheetId) {
-  var my_sheet = new GoogleSpreadsheet(sheetId);
-
-  order.seq = '1';
-  order.emailed = '0';
-  order.date = new Date().toString();
-
-  var callback = function(req, res, sheetId, meta, sheet) {
-    
-  };
-
-  my_sheet.useServiceAccountAuth(key, function(err) {
-    if (err) {
-      console.log(err);
-      res.send(400);
-      return;
-    }
-
-    my_sheet.getInfo( function( err, sheet_info ){
-      if (err) {
-        console.log(err);
-        res.send(400);
-        return;
-      }
-      console.log( sheet_info.title + ' is loaded' );
-      // use worksheet object if you want to stop using the # in your calls 
-   
-      var sheet1 = sheet_info.worksheets[0];
-      sheet1.addRow(order, function(err) {
-        if (err) {
-          console.log(err);
-          res.send(400);
-          return;
-        }
-        sheet1.getCells({"min-row":2, "max-row":2, "min-col":5, "max-col":5}, function(err, data) {
-          contact = data[0].value;
-          res.render('thankyou', {sheetId: sheetId, contact: contact});
-        });
-      });
-    });
-  });
-}
-
 
 function getColumnInfoAnsSheet(req, res, sheetId, callback) {
   var sheet = new GoogleSpreadsheet(sheetId);
@@ -67,8 +24,13 @@ function getColumnInfoAnsSheet(req, res, sheetId, callback) {
       console.log(sheetInfo.title + ' is loaded!!' );
       var sheet1 = sheetInfo.worksheets[0];
       sheet1.getCells({"min-row":2, "max-row":2, "min-col":3, "max-col":4}, function(err, data) {
-        var metadataRows = data[0].value;
-        var metadataColumns = data[1].value;
+        if (err) {
+          console.log(err);
+          res.send(500);
+          return;
+        }
+        var metadataRows = parseInt(data[0].value);
+        var metadataColumns = parseInt(data[1].value);
 
         var maxCol = sheet1.colCount;
         var option = {"min-row":1, "max-row":metadataRows, "min-col":1, "max-col":maxCol};
@@ -193,6 +155,43 @@ function getColumnInfoAnsSheet(req, res, sheetId, callback) {
       });
     });
   });
+}
+
+function placeOrder(order, req, res, sheetId) {
+  var my_sheet = new GoogleSpreadsheet(sheetId);
+
+  order.seq = '1';
+  order.emailed = '0';
+  order.date = new Date().toString();
+
+  var callback = function(req, res, sheetId, meta, sheet) {
+    for (var i in meta.info) {
+      var col = meta.info[i];
+      if (col['limit'] !== undefined) {
+        console.log(order[col['Item']], ";", parseInt(Number(order[col['Item']])));
+        console.log(col['limit'], ";", Math.max([0, parseInt(Number(col['limit']))]));
+        if (order[col['Item']] !== undefined && parseInt(Number(order[col['Item']])) > Math.max([0, parseInt(Number(col['limit']))])) {
+          console.log("bad request");
+          res.set('Content-Type', 'plain/text');
+          res.send("對不起，訂單 #{col['Item']} 已經全數售罄，請重新選購，謝謝！");
+          return;
+        }
+      }
+    }
+    sheet.addRow(order, function(err) {
+      if (err) {
+        console.log(err);
+        res.send(400);
+        return;
+      }
+      sheet.getCells({"min-row":2, "max-row":2, "min-col":5, "max-col":5}, function(err, data) {
+        contact = data[0].value;
+        res.render('thankyou', {sheetId: sheetId, contact: contact});
+      });
+    });
+  };
+
+  getColumnInfoAnsSheet(req, res, sheetId, callback);
 }
 
 

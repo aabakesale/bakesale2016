@@ -32,7 +32,7 @@ app.post('/:sheetId/submit', function(req, res) {
       return;
     }
   }
-  bakeApi.placeOrder(order, res, req.params.sheetId);
+  bakeApi.placeOrder(order, req, res, req.params.sheetId);
 });
 
 app.get('/:sheetId', function(req, res) {
