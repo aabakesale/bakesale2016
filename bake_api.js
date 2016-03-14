@@ -4,8 +4,20 @@ var key = require('./aabs.json');
 
 var GoogleSpreadsheet = require("google-spreadsheet");
 
+function selectSheetByNameOrDie(req, res, sheetInfo, name) {
+  var sheet = null;
+  for (var i = 0; i < sheetInfo.worksheets.length; i++)
+    if (sheetInfo.worksheets[i].title === name)
+      sheet = sheetInfo.worksheets[i];
+  if (sheet === null) {
+    console.log("worksheet '" + name + "' is not found!!");
+    res.set('Content-Type', 'plain/text');
+    res.send(500);
+  }
+  return sheet;
+}
 
-function getColumnInfoAnsSheet(req, res, sheetId, callback) {
+function getColumnInfoAndSheet(req, res, sheetId, callback) {
   var sheet = new GoogleSpreadsheet(sheetId);
   sheet.useServiceAccountAuth(key, function(err) {
     if (err) {
@@ -22,9 +34,16 @@ function getColumnInfoAnsSheet(req, res, sheetId, callback) {
         return;
       }
       console.log(sheetInfo.title + ' is loaded!!' );
-      var sheet1 = sheetInfo.worksheets[0];
+      var sheet1 = selectSheetByNameOrDie(req, res, sheetInfo, 'realdata');
+      if (sheet1 == null) return;
+
       sheet1.getCells({"min-row":2, "max-row":2, "min-col":3, "max-col":4}, function(err, data) {
         if (err) {
+          console.log(err);
+          res.send(500);
+          return;
+        }
+        if (data.length < 2) {
           console.log(err);
           res.send(500);
           return;
@@ -112,7 +131,9 @@ function getColumnInfoAnsSheet(req, res, sheetId, callback) {
           var meta = { title: sheetInfo.title };
 
           
-          var sheet2 = sheetInfo.worksheets[1];
+          var sheet2 = selectSheetByNameOrDie(req, res, sheetInfo, 'formdata');
+          if (sheet2 == null) return;
+
           sheet2.getRows(2, function(err, data) {
             if (err) {
               console.log(err);
@@ -169,11 +190,11 @@ function placeOrder(order, req, res, sheetId) {
       var col = meta.info[i];
       if (col['limit'] !== undefined) {
         console.log(order[col['Item']], ";", parseInt(Number(order[col['Item']])));
-        console.log(col['limit'], ";", Math.max([0, parseInt(Number(col['limit']))]));
-        if (order[col['Item']] !== undefined && parseInt(Number(order[col['Item']])) > Math.max([0, parseInt(Number(col['limit']))])) {
+        console.log(col['limit'], ";", Math.max(0, parseInt(Number(col['limit']))));
+        if (order[col['Item']] !== undefined && parseInt(Number(order[col['Item']])) > Math.max(0, parseInt(Number(col['limit'])))) {
           console.log("bad request");
-          res.set('Content-Type', 'plain/text');
-          res.send("對不起，訂單 #{col['Item']} 已經全數售罄，請重新選購，謝謝！");
+          res.set('Content-Type', 'text/plain');
+          res.send("對不起，訂單 「" + col['Item'] + "」 已經全數售罄，請重新選購，謝謝！");
           return;
         }
       }
@@ -191,7 +212,7 @@ function placeOrder(order, req, res, sheetId) {
     });
   };
 
-  getColumnInfoAnsSheet(req, res, sheetId, callback);
+  getColumnInfoAndSheet(req, res, sheetId, callback);
 }
 
 
@@ -199,7 +220,7 @@ function displayOffer(req, res, sheetId) {
   var callback = function(req, res, sheetId, meta, sheet) {
     res.render('index', {info: meta.info, keys: meta.keys, sheetId: sheetId, meta: meta.meta, unitPrices: meta.unitPrices, messages: meta.messages, formSpec: meta.formSpec});
   };
-  getColumnInfoAnsSheet(req, res, sheetId, callback);
+  getColumnInfoAndSheet(req, res, sheetId, callback);
 }
 
 
@@ -244,16 +265,32 @@ function generatePasscode(req, res, sheetId, callback) {
 function generateReceipts(req, res, sheetId) {
   var callback = function(req, res, sheetId, meta, sheet) {
     var metadataRows = parseInt(Number(meta.metadataRows));
-    sheet.getRows({offset: metadataRows + 1}, function(err, data) {
+    var allData = [];
+    var recursiveCallback = function(nextRows, allData, err, data) {
       if (err) {
         console.log(err);
         res.send(422);
         return;
       }
-      res.render('receipts', {meta: meta.meta, info: meta.info, data: data});
-    });
+      console.log(nextRows, " -- XD -- ", data.length, " >>>> ", allData.length);
+      if (data.length == 0) {
+
+        // WTF: the column names are automatically whitespaces removed!!!
+        for (var i in meta.info) {
+          meta.info[i].Item = meta.info[i].Item.replace(/ /g,'');
+        }
+
+        res.render('receipts', {meta: meta.meta, info: meta.info, data: allData});
+        return;
+      }
+      for (var i in data) allData.push(data[i]);
+      nextRows = nextRows + data.length;
+      sheet.getRows({offset: nextRows, limit: 20}, recursiveCallback.bind(null, nextRows, allData));
+      return;
+    };
+    sheet.getRows({offset: metadataRows + 1, limit: 20}, recursiveCallback.bind(null, metadataRows+1, allData));
   };
-  getColumnInfoAnsSheet(req, res, sheetId, callback);
+  getColumnInfoAndSheet(req, res, sheetId, callback);
 }
 
 module.exports = {
