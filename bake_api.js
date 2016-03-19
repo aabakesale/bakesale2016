@@ -241,7 +241,8 @@ function generatePasscode(req, res, sheetId, callback) {
         res.send(422);
         return;
       }
-      var sheet1 = sheetInfo.worksheets[0];
+      var sheet1 = selectSheetByNameOrDie(req, res, sheetInfo, 'realdata');
+      if (sheet1 == null) return;
       // passcode should be store at E3
       sheet1.getCells({"min-row":3, "max-row":3, "min-col":5, "max-col":5}, function(err, data) {
         var v = data[0].value.substr(10);
@@ -280,7 +281,7 @@ function generateReceipts(req, res, sheetId) {
           meta.info[i].Item = meta.info[i].Item.replace(/ /g,'');
         }
 
-        res.render('receipts', {meta: meta.meta, info: meta.info, data: allData});
+        res.render('receipts', {meta: meta.meta, info: meta.info, data: allData, unitPrices: meta.unitPrices});
         return;
       }
       for (var i in data) allData.push(data[i]);
